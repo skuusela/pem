@@ -15,13 +15,16 @@
 Serial Port communication for the Peripheral Emulator.
 """
 
-import binascii
+#import binascii |used for _write_char debugging
 import time
 import logging
 
 import serial
 
-from phys import Phys
+try:
+    from phys import Phys
+except ImportError:
+    from .phys import Phys
 
 # importlib is used within an exec
 
@@ -63,7 +66,7 @@ class SerialConnection(Phys):
         # pylint: disable=unused-argument
         super(SerialConnection, self).__init__()
         self._ser = serial.Serial()
-        for parm in self._arguments.keys():
+        for parm in list(self._arguments.keys()):
             # pylint: disable=exec-used
             exec("self._ser." + parm + " = args." + parm)
         self._ser.xonxoff = False
@@ -98,20 +101,20 @@ class SerialConnection(Phys):
         Returns the number of charaters that can be read.
         """
         time.sleep(0.01)
-        return self._ser.inWaiting()
+        return self._ser.in_waiting
 
     def _read_char(self):
         """
         Read a char from the physical layer.
         """
         retval = self._ser.read()
-        return retval
+        return chr(ord(retval))
 
     def _write_char(self, character):
         """
         Write a char to the physical layer.
         """
-        logging.debug("WRITE {0}".format(binascii.hexlify(character)))
+        #logging.debug("WRITE {0}".format(binascii.hexlify(character)))
         return self._ser.write(character)
 
     def _flush(self):
